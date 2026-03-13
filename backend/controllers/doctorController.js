@@ -53,7 +53,8 @@ const verifyDoctor = async (req, res) => {
     const doctor = await Doctor.findById(req.params.id);
 
     if (doctor) {
-        doctor.isVerified = true;
+        // If revoke flag is passed, set to false; otherwise set to true
+        doctor.isVerified = req.body.revoke ? false : true;
         const updatedDoctor = await doctor.save();
         res.json(updatedDoctor);
     } else {
