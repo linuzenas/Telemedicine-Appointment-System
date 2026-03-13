@@ -24,13 +24,18 @@ const registerUser = async (req, res) => {
     if (user) {
         // If the user registered as a doctor, create their doctor profile
         if (role === 'doctor') {
-            await Doctor.create({
-                user: user._id,
-                specialty: specialty || 'General',
-                qualifications: qualifications || [],
-                experience: experience || 0,
-                isVerified: true,
-            });
+            try {
+                await Doctor.create({
+                    user: user._id,
+                    specialty: specialty || 'General',
+                    qualifications: qualifications || [],
+                    experience: Number(experience) || 0,
+                    isVerified: true,
+                });
+                console.log('Doctor profile created successfully for:', user.name);
+            } catch (docErr) {
+                console.error('Failed to create doctor profile:', docErr.message);
+            }
         }
 
         res.status(201).json({

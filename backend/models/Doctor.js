@@ -13,11 +13,11 @@ const doctorSchema = mongoose.Schema(
         },
         qualifications: {
             type: [String],
-            required: true,
+            default: [],
         },
         experience: {
             type: Number,
-            required: true,
+            default: 0,
         },
         isVerified: {
             type: Boolean,
