@@ -8,6 +8,7 @@ const doctorRoutes = require('./routes/doctorRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
 const prescriptionRoutes = require('./routes/prescriptionRoutes');
 const ratingRoutes = require('./routes/ratingRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 // Load env vars
 dotenv.config();
@@ -27,6 +28,7 @@ app.use('/api/doctors', doctorRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/prescriptions', prescriptionRoutes);
 app.use('/api/ratings', ratingRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.get('/', (req, res) => {
     res.send('Telemedicine API is running...');

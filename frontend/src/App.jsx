@@ -1,18 +1,21 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
 import { useStore } from './store/useStore';
+import { useLanguage } from './context/LanguageContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import PatientDashboard from './pages/patient/PatientDashboard';
 import DoctorDashboard from './pages/doctor/DoctorDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import VideoCall from './pages/VideoCall';
+import NotificationBell from './components/NotificationBell';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 // Header with navigation and logout
 const Header = () => {
   const { isAuthenticated, user, logout } = useStore();
+  const { t, lang, toggleLanguage } = useLanguage();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -29,23 +32,27 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-gradient-to-r from-primary-600 to-primary-700 text-white p-4 shadow-lg flex justify-between items-center">
+    <header className="bg-gradient-to-r from-primary-600 to-primary-700 text-white p-4 shadow-lg flex justify-between items-center flex-wrap gap-2">
       <Link to={isAuthenticated ? getDashboardLink() : '/'} className="text-xl font-bold hover:opacity-90 flex items-center gap-2">
-        <span className="text-2xl">🏥</span> Rural Telemedicine
+        <span className="text-2xl">🏥</span> {t('appName')}
       </Link>
-      <nav className="flex items-center gap-4">
+      <nav className="flex items-center gap-3 sm:gap-4 flex-wrap">
+        <button onClick={toggleLanguage} className="bg-white/10 px-3 py-1 rounded-full text-sm font-bold hover:bg-white/20 transition">
+          {t('switchLang')}
+        </button>
+        <NotificationBell />
         {isAuthenticated ? (
           <>
-            <span className="text-sm opacity-80 hidden sm:block">Hello, {user?.name}</span>
-            <Link to={getDashboardLink()} className="text-sm font-semibold hover:underline">Dashboard</Link>
+            <span className="text-sm opacity-80 hidden sm:block">{t('hello')}, {user?.name}</span>
+            <Link to={getDashboardLink()} className="text-sm font-semibold hover:underline">{t('dashboard')}</Link>
             <button onClick={handleLogout} className="bg-white/20 backdrop-blur text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-white/30 transition">
-              Logout
+              {t('logout')}
             </button>
           </>
         ) : (
           <>
-            <Link to="/login" className="text-sm font-semibold hover:underline">Login</Link>
-            <Link to="/register" className="bg-white text-primary-700 px-4 py-1.5 rounded-lg text-sm font-bold hover:bg-gray-100 transition">Sign Up</Link>
+            <Link to="/login" className="text-sm font-semibold hover:underline">{t('login')}</Link>
+            <Link to="/register" className="bg-white text-primary-700 px-4 py-1.5 rounded-lg text-sm font-bold hover:bg-gray-100 transition">{t('signUp')}</Link>
           </>
         )}
       </nav>
@@ -64,91 +71,93 @@ const MainLayout = ({ children }) => (
 );
 
 // Landing Page with rural accessibility emphasis
-const Home = () => (
-  <div className="space-y-12 py-8">
-    {/* Hero Section */}
-    <div className="text-center max-w-3xl mx-auto">
-      <h1 className="text-4xl font-bold text-gray-800 mb-4">
-        Healthcare for <span className="text-primary-600">Every Village</span>
-      </h1>
-      <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-        Connect with qualified doctors from the comfort of your home. No travel needed.
-        Book appointments, get video consultations, and receive digital prescriptions — all online.
-      </p>
-      <div className="flex gap-4 justify-center flex-wrap">
-        <Link to="/register" className="bg-primary-600 text-white px-8 py-3 rounded-xl font-bold text-lg hover:bg-primary-700 transition shadow-lg">
-          Get Started Free
-        </Link>
-        <Link to="/login" className="bg-white text-primary-700 border-2 border-primary-600 px-8 py-3 rounded-xl font-bold text-lg hover:bg-primary-50 transition">
-          Login
-        </Link>
+const Home = () => {
+  const { t } = useLanguage();
+  return (
+    <div className="space-y-12 py-8">
+      {/* Hero Section */}
+      <div className="text-center max-w-3xl mx-auto">
+        <h1 className="text-4xl font-bold text-gray-800 mb-4 whitespace-pre-wrap">
+          {t('heroTitle')}
+        </h1>
+        <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+          {t('heroSubtitle')}
+        </p>
+        <div className="flex gap-4 justify-center flex-wrap">
+          <Link to="/register" className="bg-primary-600 text-white px-8 py-3 rounded-xl font-bold text-lg hover:bg-primary-700 transition shadow-lg">
+            {t('getStarted')}
+          </Link>
+          <Link to="/login" className="bg-white text-primary-700 border-2 border-primary-600 px-8 py-3 rounded-xl font-bold text-lg hover:bg-primary-50 transition">
+            {t('login')}
+          </Link>
+        </div>
       </div>
-    </div>
 
-    {/* Features Grid */}
-    <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-      <div className="bg-white p-6 rounded-xl shadow-md text-center hover:shadow-lg transition">
-        <div className="text-4xl mb-3">📱</div>
-        <h3 className="font-bold text-lg mb-2">Easy to Use</h3>
-        <p className="text-gray-500 text-sm">Simple interface designed for everyone, including first-time smartphone users. No complex setup needed.</p>
+      {/* Features Grid */}
+      <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="bg-white p-6 rounded-xl shadow-md text-center hover:shadow-lg transition">
+          <div className="text-4xl mb-3">📱</div>
+          <h3 className="font-bold text-lg mb-2">{t('easyToUse')}</h3>
+          <p className="text-gray-500 text-sm">{t('easyToUseDesc')}</p>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-md text-center hover:shadow-lg transition">
+          <div className="text-4xl mb-3">🎥</div>
+          <h3 className="font-bold text-lg mb-2">{t('videoConsultation')}</h3>
+          <p className="text-gray-500 text-sm">{t('videoConsultationDesc')}</p>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-md text-center hover:shadow-lg transition">
+          <div className="text-4xl mb-3">💊</div>
+          <h3 className="font-bold text-lg mb-2">{t('digitalPrescription')}</h3>
+          <p className="text-gray-500 text-sm">{t('digitalPrescriptionDesc')}</p>
+        </div>
       </div>
-      <div className="bg-white p-6 rounded-xl shadow-md text-center hover:shadow-lg transition">
-        <div className="text-4xl mb-3">🎥</div>
-        <h3 className="font-bold text-lg mb-2">Video Consultation</h3>
-        <p className="text-gray-500 text-sm">Talk to doctors face-to-face through video calls. Works even on slow internet connections.</p>
-      </div>
-      <div className="bg-white p-6 rounded-xl shadow-md text-center hover:shadow-lg transition">
-        <div className="text-4xl mb-3">💊</div>
-        <h3 className="font-bold text-lg mb-2">Digital Prescriptions</h3>
-        <p className="text-gray-500 text-sm">Receive prescriptions digitally after your consultation. Show at any pharmacy to get your medicines.</p>
-      </div>
-    </div>
 
-    {/* How it Works */}
-    <div className="max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">How It Works</h2>
-      <div className="grid md:grid-cols-4 gap-4">
-        {[
-          { step: '1', title: 'Sign Up', desc: 'Create your free account as a patient' },
-          { step: '2', title: 'Find Doctor', desc: 'Browse available doctors and their specialties' },
-          { step: '3', title: 'Book & Consult', desc: 'Pick a time slot and join the video call' },
-          { step: '4', title: 'Get Prescription', desc: 'Receive your digital prescription instantly' },
-        ].map((item) => (
-          <div key={item.step} className="text-center">
-            <div className="w-12 h-12 bg-primary-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">
-              {item.step}
+      {/* How it Works */}
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">{t('howItWorks')}</h2>
+        <div className="grid md:grid-cols-4 gap-4">
+          {[
+            { step: '1', title: t('step1'), desc: t('step1Desc') },
+            { step: '2', title: t('step2'), desc: t('step2Desc') },
+            { step: '3', title: t('step3'), desc: t('step3Desc') },
+            { step: '4', title: t('step4'), desc: t('step4Desc') },
+          ].map((item) => (
+            <div key={item.step} className="text-center">
+              <div className="w-12 h-12 bg-primary-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">
+                {item.step}
+              </div>
+              <h4 className="font-bold text-gray-800">{item.title}</h4>
+              <p className="text-sm text-gray-500 mt-1">{item.desc}</p>
             </div>
-            <h4 className="font-bold text-gray-800">{item.title}</h4>
-            <p className="text-sm text-gray-500 mt-1">{item.desc}</p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
 
-    {/* Trust Indicators */}
-    <div className="bg-primary-50 p-8 rounded-xl max-w-4xl mx-auto text-center">
-      <h3 className="font-bold text-lg text-primary-800 mb-4">Built for Rural India</h3>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-        <div className="bg-white p-3 rounded-lg shadow-sm">
-          <p className="font-bold text-primary-700 text-xl">Free</p>
-          <p className="text-gray-500">No Platform Fees</p>
-        </div>
-        <div className="bg-white p-3 rounded-lg shadow-sm">
-          <p className="font-bold text-primary-700 text-xl">Secure</p>
-          <p className="text-gray-500">Private & Encrypted</p>
-        </div>
-        <div className="bg-white p-3 rounded-lg shadow-sm">
-          <p className="font-bold text-primary-700 text-xl">Simple</p>
-          <p className="text-gray-500">Minimal Steps</p>
-        </div>
-        <div className="bg-white p-3 rounded-lg shadow-sm">
-          <p className="font-bold text-primary-700 text-xl">24/7</p>
-          <p className="text-gray-500">Access Anytime</p>
+      {/* Trust Indicators */}
+      <div className="bg-primary-50 p-8 rounded-xl max-w-4xl mx-auto text-center">
+        <h3 className="font-bold text-lg text-primary-800 mb-4">{t('builtForRural')}</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="bg-white p-3 rounded-lg shadow-sm">
+            <p className="font-bold text-primary-700 text-xl">{t('free')}</p>
+            <p className="text-gray-500">{t('noPlatformFees')}</p>
+          </div>
+          <div className="bg-white p-3 rounded-lg shadow-sm">
+            <p className="font-bold text-primary-700 text-xl">{t('secure')}</p>
+            <p className="text-gray-500">{t('privateEncrypted')}</p>
+          </div>
+          <div className="bg-white p-3 rounded-lg shadow-sm">
+            <p className="font-bold text-primary-700 text-xl">{t('simple')}</p>
+            <p className="text-gray-500">{t('minimalSteps')}</p>
+          </div>
+          <div className="bg-white p-3 rounded-lg shadow-sm">
+            <p className="font-bold text-primary-700 text-xl">{t('available247')}</p>
+            <p className="text-gray-500">{t('accessAnytime')}</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { isAuthenticated, user } = useStore();

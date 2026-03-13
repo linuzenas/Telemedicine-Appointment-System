@@ -1,5 +1,6 @@
 const Appointment = require('../models/Appointment');
 const Doctor = require('../models/Doctor');
+const { createNotification } = require('./notificationController');
 
 // @desc    Create new appointment
 // @route   POST /api/appointments
@@ -30,6 +31,17 @@ const createAppointment = async (req, res) => {
     });
 
     const createdAppointment = await appointment.save();
+
+    // Notify doctor
+    const doctorProfile = await Doctor.findById(doctorId).populate('user');
+    if (doctorProfile) {
+        createNotification(
+            doctorProfile.user._id,
+            `New appointment booked by ${req.user.name} for ${date} at ${timeSlot}`,
+            'appointment'
+        );
+    }
+
     res.status(201).json(createdAppointment);
 };
 
@@ -82,6 +94,25 @@ const updateAppointmentStatus = async (req, res) => {
     if (appointment) {
         appointment.status = status;
         const updatedAppointment = await appointment.save();
+
+        if (status === 'cancelled') {
+            // Notify doctor or patient based on who cancelled
+            if (req.user.role === 'patient') {
+                const doctorProfile = await Doctor.findById(appointment.doctor);
+                createNotification(
+                    doctorProfile.user,
+                    `Appointment on ${appointment.date} at ${appointment.timeSlot} was cancelled by the patient.`,
+                    'appointment'
+                );
+            } else if (req.user.role === 'doctor') {
+                createNotification(
+                    appointment.patient,
+                    `Your appointment on ${appointment.date} at ${appointment.timeSlot} was cancelled.`,
+                    'appointment'
+                );
+            }
+        }
+
         res.json(updatedAppointment);
     } else {
         res.status(404).json({ message: 'Appointment not found' });

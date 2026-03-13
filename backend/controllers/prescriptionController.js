@@ -1,6 +1,7 @@
 const Prescription = require('../models/Prescription');
 const Appointment = require('../models/Appointment');
 const Doctor = require('../models/Doctor');
+const { createNotification } = require('./notificationController');
 
 // @desc    Create prescription
 // @route   POST /api/prescriptions
@@ -30,6 +31,13 @@ const createPrescription = async (req, res) => {
         appointment.status = 'completed';
         await appointment.save();
     }
+
+    // Notify patient
+    createNotification(
+        patientId,
+        `Your prescription for the ${appointment.date} appointment is now available.`,
+        'prescription'
+    );
 
     res.status(201).json(createdPrescription);
 };

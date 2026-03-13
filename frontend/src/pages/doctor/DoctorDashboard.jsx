@@ -16,6 +16,7 @@ const DoctorDashboard = () => {
     const [medications, setMedications] = useState([{ name: '', dosage: '', frequency: '' }]);
     const [notes, setNotes] = useState('');
     const [myRatings, setMyRatings] = useState({ ratings: [], averageRating: 0, totalReviews: 0 });
+    const [availability, setAvailability] = useState([{ day: 'Monday', startTime: '09:00', endTime: '17:00' }]);
     const [activeTab, setActiveTab] = useState('upcoming');
 
     const fetchAppointments = async () => {
@@ -39,6 +40,11 @@ const DoctorDashboard = () => {
             if (me) {
                 const { data } = await axios.get(`/api/ratings/doctor/${me._id}`);
                 setMyRatings(data);
+
+                // Initialize availability state if data exists
+                if (me.availability && me.availability.length > 0) {
+                    setAvailability(me.availability);
+                }
             }
         } catch { }
     };
@@ -72,6 +78,20 @@ const DoctorDashboard = () => {
             toast.error('Failed: ' + (err.response?.data?.message || err.message));
         }
     };
+
+    const handleSaveAvailability = async () => {
+        try {
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+            await axios.put('/api/doctors/availability', { availability }, config);
+            toast.success('Availability schedule saved!');
+        } catch (error) {
+            toast.error('Failed to save availability');
+        }
+    };
+
+    const addTimeSlot = () => setAvailability([...availability, { day: 'Monday', startTime: '09:00', endTime: '17:00' }]);
+    const removeTimeSlot = (idx) => { if (availability.length > 1) setAvailability(availability.filter((_, i) => i !== idx)); };
+    const updateTimeSlot = (idx, field, value) => { const u = [...availability]; u[idx][field] = value; setAvailability(u); };
 
     if (loading) return <div className="p-8 text-center text-lg">Loading Dashboard...</div>;
 
@@ -115,16 +135,17 @@ const DoctorDashboard = () => {
             </div>
 
             {/* Tab Nav */}
-            <div className="bg-white rounded-xl shadow p-1 flex gap-1">
+            <div className="bg-white rounded-xl shadow p-1 flex gap-1 overflow-x-auto">
                 {[
                     { id: 'upcoming', label: '📋 Upcoming' },
                     { id: 'completed', label: '✅ Completed' },
                     { id: 'reviews', label: '⭐ My Reviews' },
+                    { id: 'availability', label: '🕒 Availability' },
                 ].map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-bold transition ${activeTab === tab.id ? 'bg-primary-600 text-white shadow' : 'text-gray-500 hover:bg-gray-100'
+                        className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-bold transition whitespace-nowrap min-w-fit ${activeTab === tab.id ? 'bg-primary-600 text-white shadow' : 'text-gray-500 hover:bg-gray-100'
                             }`}
                     >
                         {tab.label}
@@ -269,6 +290,55 @@ const DoctorDashboard = () => {
                             </div>
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* TAB: Availability Scheduler */}
+            {activeTab === 'availability' && (
+                <div className="bg-white p-6 rounded-xl shadow max-w-4xl">
+                    <div className="flex justify-between items-center border-b pb-2 mb-4">
+                        <h3 className="text-xl font-bold">Manage Availability</h3>
+                        <button onClick={addTimeSlot} className="bg-green-100 text-green-700 px-4 py-2 rounded-lg font-bold text-sm hover:bg-green-200 transition">
+                            + Add Timeslot
+                        </button>
+                    </div>
+                    <p className="text-sm text-gray-500 mb-6">Set your weekly schedule. This will act as a reference for patients when booking. (Full slot integration can be built out further).</p>
+
+                    <div className="space-y-4">
+                        {availability.map((slot, idx) => (
+                            <div key={idx} className="flex flex-col sm:flex-row gap-4 items-center bg-gray-50 p-4 border rounded-xl">
+                                <div className="flex-1 w-full">
+                                    <label className="text-xs font-bold text-gray-500 uppercase">Day</label>
+                                    <select className="w-full border p-2.5 rounded-lg text-sm bg-white" value={slot.day} onChange={(e) => updateTimeSlot(idx, 'day', e.target.value)}>
+                                        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(d => (
+                                            <option key={d} value={d}>{d}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="flex-1 w-full flex gap-4">
+                                    <div className="flex-1">
+                                        <label className="text-xs font-bold text-gray-500 uppercase">Start Time</label>
+                                        <input type="time" className="w-full border p-2.5 rounded-lg text-sm bg-white" value={slot.startTime} onChange={(e) => updateTimeSlot(idx, 'startTime', e.target.value)} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <label className="text-xs font-bold text-gray-500 uppercase">End Time</label>
+                                        <input type="time" className="w-full border p-2.5 rounded-lg text-sm bg-white" value={slot.endTime} onChange={(e) => updateTimeSlot(idx, 'endTime', e.target.value)} />
+                                    </div>
+                                </div>
+                                {availability.length > 1 && (
+                                    <button onClick={() => removeTimeSlot(idx)} className="mt-4 sm:mt-5 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2.5 rounded-lg transition" title="Remove Slot">
+                                        🗑️
+                                    </button>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="mt-8 pt-4 border-t flex justify-end">
+                        <button onClick={handleSaveAvailability} className="bg-primary-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-primary-700 transition shadow-lg">
+                            Save Schedule
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

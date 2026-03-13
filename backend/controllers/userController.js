@@ -89,4 +89,42 @@ const getUserProfile = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, authUser, getUserProfile };
+// @desc    Update user profile
+// @route   PUT /api/users/profile
+// @access  Private
+const updateUserProfile = async (req, res) => {
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+        user.name = req.body.name || user.name;
+        user.age = req.body.age || user.age;
+        user.gender = req.body.gender || user.gender;
+        user.bloodGroup = req.body.bloodGroup || user.bloodGroup;
+        user.weight = req.body.weight || user.weight;
+        user.height = req.body.height || user.height;
+        user.allergies = req.body.allergies !== undefined ? req.body.allergies : user.allergies;
+        user.chronicConditions = req.body.chronicConditions !== undefined ? req.body.chronicConditions : user.chronicConditions;
+        user.emergencyContact = req.body.emergencyContact !== undefined ? req.body.emergencyContact : user.emergencyContact;
+
+        const updatedUser = await user.save();
+
+        res.json({
+            _id: updatedUser._id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            role: updatedUser.role,
+            age: updatedUser.age,
+            gender: updatedUser.gender,
+            bloodGroup: updatedUser.bloodGroup,
+            weight: updatedUser.weight,
+            height: updatedUser.height,
+            allergies: updatedUser.allergies,
+            chronicConditions: updatedUser.chronicConditions,
+            emergencyContact: updatedUser.emergencyContact,
+        });
+    } else {
+        res.status(404).json({ message: 'User not found' });
+    }
+};
+
+module.exports = { registerUser, authUser, getUserProfile, updateUserProfile };

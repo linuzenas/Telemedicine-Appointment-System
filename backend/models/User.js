@@ -21,6 +21,15 @@ const userSchema = mongoose.Schema(
             enum: ['patient', 'doctor', 'admin'],
             default: 'patient',
         },
+        // Patient Profile Fields
+        age: { type: Number },
+        gender: { type: String, enum: ['Male', 'Female', 'Other'] },
+        bloodGroup: { type: String },
+        weight: { type: Number },
+        height: { type: Number },
+        allergies: { type: String, default: '' },
+        chronicConditions: { type: String, default: '' },
+        emergencyContact: { type: String, default: '' },
     },
     {
         timestamps: true,
